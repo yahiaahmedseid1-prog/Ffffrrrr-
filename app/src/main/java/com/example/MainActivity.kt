@@ -864,8 +864,8 @@ fun DetailScreen(navController: NavController, animeId: String, viewModel: Anime
             items(episodesSortedList) { ep ->
                 EpisodeItemRow(ep) {
                     if (activity != null) {
-                        // Play direct Rewarded Ad before watching. Fallback included
-                        UnityAdsManager.showRewardedAd(activity) {
+                        // Interstitial Ad appears when entering/playing the episode. Fallback included
+                        UnityAdsManager.showInterstitialAd(activity) {
                             val encodedUrl = URLEncoder.encode(ep.video, StandardCharsets.UTF_8.toString())
                             navController.navigate("player/$encodedUrl")
                         }

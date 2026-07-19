@@ -19,6 +19,7 @@ object UnityAdsManager {
     const val GAME_ID = "6157767"
     const val BANNER_PLACEMENT_ID = "Banner_Android"
     const val REWARDED_PLACEMENT_ID = "Rewarded_Android"
+    const val INTERSTITIAL_PLACEMENT_ID = "Interstitial_Android"
     
     // Unity Ads test mode. Set to true for integration testing
     private const val TEST_MODE = true
@@ -32,13 +33,62 @@ object UnityAdsManager {
         UnityAds.initialize(context.applicationContext, GAME_ID, TEST_MODE, object : IUnityAdsInitializationListener {
             override fun onInitializationComplete() {
                 isInitialized = true
-                Log.d(TAG, "Unity Ads Initialization Complete.")
+                Log.d(TAG, "Unity Ads Initialization Complete. Preloading all ads...")
                 loadRewardedAd()
+                loadInterstitialAd()
             }
 
             override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError, message: String) {
                 isInitialized = false
                 Log.e(TAG, "Unity Ads Initialization Failed: [$error] $message")
+            }
+        })
+    }
+
+    // Pre-loads the Interstitial Ad so it is ready on app start
+    fun loadInterstitialAd() {
+        if (!isInitialized) return
+        UnityAds.load(INTERSTITIAL_PLACEMENT_ID, object : IUnityAdsLoadListener {
+            override fun onUnityAdsAdLoaded(placementId: String) {
+                Log.d(TAG, "Interstitial Ad Loaded successfully: $placementId")
+            }
+
+            override fun onUnityAdsFailedToLoad(placementId: String, error: UnityAds.UnityAdsLoadError, message: String) {
+                Log.e(TAG, "Interstitial Ad Failed to Load: [$error] $message")
+            }
+        })
+    }
+
+    // Shows an Interstitial Ad, with callback to continue
+    fun showInterstitialAd(activity: Activity, onAdFinished: () -> Unit) {
+        if (!isInitialized) {
+            Log.e(TAG, "Unity Ads not initialized yet. Proceeding directly.")
+            onAdFinished()
+            return
+        }
+
+        UnityAds.show(activity, INTERSTITIAL_PLACEMENT_ID, UnityAdsShowOptions(), object : IUnityAdsShowListener {
+            override fun onUnityAdsShowFailure(placementId: String, error: UnityAds.UnityAdsShowError, message: String) {
+                Log.e(TAG, "Interstitial Ad Show Failed: [$error] $message. Proceeding directly.")
+                loadInterstitialAd() // Preload next
+                onAdFinished()
+            }
+
+            override fun onUnityAdsShowStart(placementId: String) {
+                Log.d(TAG, "Interstitial Ad Show Started.")
+            }
+
+            override fun onUnityAdsShowClick(placementId: String) {
+                Log.d(TAG, "Interstitial Ad Clicked.")
+            }
+
+            override fun onUnityAdsShowComplete(
+                placementId: String,
+                state: UnityAds.UnityAdsShowCompletionState
+            ) {
+                Log.d(TAG, "Interstitial Ad Show Complete with state: $state")
+                loadInterstitialAd() // Preload next
+                onAdFinished()
             }
         })
     }
