@@ -1,0 +1,6 @@
+{
+  "name": "Anime Watcher",
+  "description": "Watch anime episodes with Realtime Database and Unity Ads integration",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
